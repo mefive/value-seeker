@@ -1,0 +1,15 @@
+version: '3.1'
+services:
+  db:
+    image: mysql:5.7
+    container_name: vs_db
+    restart: always
+    ports:
+      - 3308:3306
+    environment:
+      MYSQL_DATABASE: db
+      MYSQL_USER: mefive
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - ./db:/var/lib/mysql

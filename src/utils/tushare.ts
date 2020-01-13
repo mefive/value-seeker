@@ -9,7 +9,7 @@ export function tushare<T = any>(apiName: string, params: {}) {
     if (resp.data.code === 0) {
       const { fields, items } = resp.data.data as {
         fields: string[];
-        items: Array<string | number>;
+        items: any[];
       };
       return {
         ...resp,
@@ -19,7 +19,7 @@ export function tushare<T = any>(apiName: string, params: {}) {
               ...p,
               [_.camelCase(fields[index])]: item[index],
             }),
-            {},
+            {} as any,
           );
         }),
       };

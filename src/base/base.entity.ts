@@ -1,6 +1,6 @@
 import { PrimaryGeneratedColumn } from 'typeorm';
 
-export abstract class BaseEntity<T> {
+export abstract class BaseEntity {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: number | null = null;
 }

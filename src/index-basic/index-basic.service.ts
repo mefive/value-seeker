@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getConnection, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { BaseService } from '../base/base.service';
+import { batchInsert } from '../utils/query';
 import { tushare } from '../utils/tushare';
 import { IndexBasicEntity } from './index-basic.entity';
 import { IndexBasicInterface } from './index-basic.interface';
@@ -20,11 +21,6 @@ export class IndexBasicService extends BaseService {
       market: 'SSE',
     });
 
-    await getConnection()
-      .createQueryBuilder()
-      .insert()
-      .into(IndexBasicEntity)
-      .values(resp.data)
-      .execute();
+    await batchInsert(IndexBasicEntity, resp.data);
   }
 }

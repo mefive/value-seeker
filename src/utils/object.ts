@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 
-export function snakeCaseKeys(object) {
+export function snakeCaseKeys(object: any) {
   return _.transform(
     object,
     (r, v, k: string) => {
@@ -10,11 +10,11 @@ export function snakeCaseKeys(object) {
         r[_.snakeCase(k)] = v;
       }
     },
-    {},
+    {} as any,
   );
 }
 
-export function camelCaseKeys(object) {
+export function camelCaseKeys(object: any) {
   return _.transform(
     object,
     (r, v, k: string) => {
@@ -24,6 +24,6 @@ export function camelCaseKeys(object) {
         r[_.snakeCase(k)] = v;
       }
     },
-    {},
+    {} as any,
   );
 }

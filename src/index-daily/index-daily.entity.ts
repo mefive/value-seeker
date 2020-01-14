@@ -25,7 +25,7 @@ export class IndexDailyEntity extends BaseEntity {
   change: number = 0;
 
   @Column()
-  pctChange: number = 0;
+  pctChg: number = 0;
 
   @Column()
   vol: number = 0;

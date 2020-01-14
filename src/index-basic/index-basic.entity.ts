@@ -1,10 +1,8 @@
 import { Column, Entity } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
-import { IndexBasicInterface } from './index-basic.interface';
 
 @Entity('index_basic')
-export class IndexBasicEntity extends BaseEntity
-  implements IndexBasicInterface {
+export class IndexBasicEntity extends BaseEntity {
   @Column()
   tsCode: string = '';
 
@@ -17,5 +15,5 @@ export class IndexBasicEntity extends BaseEntity
     charset: 'utf8',
     nullable: true,
   })
-  fullname: string | null = null;
+  fullname?: string;
 }

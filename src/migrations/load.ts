@@ -10,9 +10,10 @@ async function bootstrap() {
   const indexDailyService = app.get(IndexDailyService);
 
   try {
-    // await indexBasicService.loadData();
-    await indexDailyService.loadData('000001.SH');
-    // await indexDailyService.clearData('000001.SH');
+    await Promise.all([
+      indexBasicService.loadData(),
+      indexDailyService.loadData('000001.SH'),
+    ]);
   } finally {
     await app.close();
   }

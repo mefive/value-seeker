@@ -8,13 +8,6 @@ import { IndexBasicEntity } from './index-basic.entity';
 
 @Injectable()
 export class IndexBasicService extends BaseService {
-  constructor(
-    @InjectRepository(IndexBasicEntity)
-    private readonly indexBasicRepository: Repository<IndexBasicEntity>,
-  ) {
-    super();
-  }
-
   async loadData() {
     const resp = await tushare<IndexBasicEntity[]>('index_basic', {
       market: 'SSE',

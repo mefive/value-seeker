@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { IndexBasicModule } from './index-basic/index-basic.module';
 import { IndexDailyModule } from './index-daily/index-daily.module';
 import { QhBuyDateModule } from './qh-buy-date/qh-buy-date.module';
+import { StockBasicModule } from './stock-basic/stock-basic.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { QhBuyDateModule } from './qh-buy-date/qh-buy-date.module';
     Logger,
     IndexDailyModule,
     QhBuyDateModule,
+    StockBasicModule,
   ],
   controllers: [AppController],
   providers: [AppService],

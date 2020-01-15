@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as _ from 'lodash';
 import { snakeCaseKeys } from './object';
 
-export function tushare<T = any>(apiName: string, params: {}) {
+export function tushare<T = any>(apiName: string, params: {} = {}) {
   const instance = axios.create();
 
   instance.interceptors.response.use((resp) => {

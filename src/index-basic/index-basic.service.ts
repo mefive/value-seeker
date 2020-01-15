@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { getConnection, Repository } from 'typeorm';
+import { getConnection } from 'typeorm';
 import { BaseService } from '../base/base.service';
 import { batchInsert } from '../utils/query';
 import { tushare } from '../utils/tushare';

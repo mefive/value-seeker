@@ -6,25 +6,25 @@ export class IndexDailyEntity extends BaseEntity {
   @Column()
   tsCode: string = '';
 
-  @Column()
-  tradeDate: string = '';
+  @Column('date')
+  tradeDate: Date = new Date();
 
-  @Column()
+  @Column('double', { precision: 20, scale: 2 })
   close: number = 0;
 
-  @Column()
+  @Column('double', { precision: 20, scale: 2 })
   open: number = 0;
 
-  @Column()
+  @Column('double', { precision: 20, scale: 2 })
   high: number = 0;
 
-  @Column()
+  @Column('double', { precision: 20, scale: 2 })
   low: number = 0;
 
-  @Column()
+  @Column('double', { precision: 20, scale: 2 })
   change: number = 0;
 
-  @Column()
+  @Column('double', { precision: 20, scale: 2 })
   pctChg: number = 0;
 
   @Column()
@@ -32,4 +32,16 @@ export class IndexDailyEntity extends BaseEntity {
 
   @Column()
   amount: number = 0;
+
+  @Column('double', { precision: 20, scale: 2, nullable: true })
+  rsv?: number;
+
+  @Column('double', { precision: 20, scale: 2, nullable: true })
+  k: number = 50;
+
+  @Column('double', { precision: 20, scale: 2, nullable: true })
+  d: number = 50;
+
+  @Column('double', { precision: 20, scale: 2, nullable: true })
+  j: number = 0;
 }

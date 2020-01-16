@@ -1,8 +1,8 @@
 import { Column, Entity } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 
-@Entity('index_daily')
-export class IndexDailyEntity extends BaseEntity {
+@Entity('daily')
+export class DailyEntity extends BaseEntity {
   @Column()
   tsCode: string = '';
 

@@ -2,22 +2,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as _ from 'lodash';
 import { getConnection } from 'typeorm';
 import { AssetType } from '../enums';
-import { IndexDailyEntity } from '../index-daily/index-daily.entity';
+import { DailyEntity } from '../daily/daily.entity';
 import { QhBuyDateEntity } from './qh-buy-date.entity';
 
 @Injectable()
 export class QhBuyDateService {
   async run(
     tsCode: string,
-    assetType: AssetType,
     period: number = 10,
-  ): Promise<QhBuyDateEntity[]> {
-    if (assetType === AssetType.STOCK) {
-      return [];
-    }
-
+  ) {
     const dailyList = await getConnection()
-      .getRepository(IndexDailyEntity)
+      .getRepository(DailyEntity)
       .find({ where: { tsCode }, order: { tradeDate: 'ASC' } });
 
     const buyDateList: Date[][] = [];
@@ -55,10 +50,21 @@ export class QhBuyDateService {
       }
     }
 
+    const qhBuyDateRepository = getConnection().getRepository(QhBuyDateEntity);
+
+    await qhBuyDateRepository.delete({ tsCode, period });
+
     buyDateList.forEach(([targetDate, alertDate]) => {
       Logger.log(`命中日期：${targetDate}，报警日期：${alertDate}`);
     });
 
-    return [];
+    await qhBuyDateRepository.insert(
+      buyDateList.map(([targetDate, alertDate]) => ({
+        tsCode,
+        period,
+        targetDate,
+        alertDate,
+      })),
+    );
   }
 }

@@ -10,7 +10,7 @@ module.exports = {
   synchronize: false,
   charset: 'utf8',
   namingStrategy: new SnakeNamingStrategy(),
-  logging: true,
+  logging: false,
   entities: ['src/**/*.entity.ts'],
   migrations: ['src/migration/**/*.ts'],
   subscribers: ['src/subscriber/**/*.ts'],

@@ -19,8 +19,9 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
-    "load": "ts-node ./src/migrations/load.ts",
-    "buydate": "ts-node ./src/algorithm/buy-date.ts"
+    "load-basic": "ts-node src/migrations/load-basic.ts",
+    "load-daily": "ts-node src/migrations/load-daily.ts",
+    "buy-date": "ts-node ./src/algorithm/buy-date.ts"
   },
   "dependencies": {
     "@nestjs/common": "^6.7.2",

@@ -16,4 +16,12 @@ export class IndexBasicEntity extends BaseEntity {
     nullable: true,
   })
   fullname?: string;
+
+  @Column('date', { nullable: true })
+  listDate?: Date;
+
+  @Column('date', {
+    nullable: true,
+  })
+  expDate?: Date;
 }

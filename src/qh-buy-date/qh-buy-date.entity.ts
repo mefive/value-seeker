@@ -9,6 +9,9 @@ export class QhBuyDateEntity extends BaseEntity {
   @Column()
   period: number = 0;
 
-  @Column()
-  buyDate: string = '';
+  @Column('date')
+  targetDate: Date = new Date();
+
+  @Column('date')
+  alertDate: Date = new Date();
 }

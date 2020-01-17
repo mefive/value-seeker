@@ -25,8 +25,9 @@ async function bootstrap() {
     );
 
     const size = 100;
+    const start = 6;
 
-    for (let i = 0; i < 2; i++) {
+    for (let i = start; i < start + 2; i++) {
       const stockBasicList = await getConnection()
         .getRepository(StockBasicEntity)
         .find({ skip: i * size, take: size });
@@ -41,7 +42,7 @@ async function bootstrap() {
         ),
       );
 
-      await delay(2000);
+      await delay(200);
     }
   } finally {
     app.close();

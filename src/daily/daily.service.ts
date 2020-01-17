@@ -27,7 +27,7 @@ export class DailyService {
       .getRepository(DailyEntity)
       .find({ where: { tsCode }, take: 1, order: { tradeDate: 'DESC' } });
 
-    if (dailyList[0] && moment(dailyList[0].tradeDate).isSame(today, 'd')) {
+    if (dailyList[0] && moment(dailyList[0].tradeDate).isSame(today.clone().subtract(1, 'd'), 'd')) {
       Logger.log(`${tsCode} 无需更新`);
       return;
     }

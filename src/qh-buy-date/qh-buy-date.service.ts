@@ -50,15 +50,11 @@ export class QhBuyDateService {
       }
     }
 
-    const qhBuyDateRepository = getConnection().getRepository(QhBuyDateEntity);
-
-    await qhBuyDateRepository.delete({ tsCode, period });
-
     buyDateList.forEach(([targetDate, alertDate]) => {
       Logger.log(`命中日期：${targetDate}，报警日期：${alertDate}`);
     });
 
-    await qhBuyDateRepository.insert(
+    await getConnection().getRepository(QhBuyDateEntity).insert(
       buyDateList.map(([targetDate, alertDate]) => ({
         tsCode,
         period,

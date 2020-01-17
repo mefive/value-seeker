@@ -44,6 +44,11 @@ export class DailyService {
       },
     );
 
+    if (resp.data.length === 0) {
+      Logger.log(`${tsCode}没有数据`);
+      return;
+    }
+
     const list = _.sortBy(resp.data, (d) => d.tradeDate);
 
     for (let i = 0; i < list.length; i++) {

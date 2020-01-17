@@ -24,9 +24,9 @@ async function bootstrap() {
       AssetType.INDEX,
     );
 
-    const size = 50;
+    const size = 100;
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 2; i++) {
       const stockBasicList = await getConnection()
         .getRepository(StockBasicEntity)
         .find({ skip: i * size, take: size });

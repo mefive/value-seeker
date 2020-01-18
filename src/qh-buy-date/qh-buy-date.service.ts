@@ -1,19 +1,27 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as _ from 'lodash';
-import { getConnection } from 'typeorm';
-import { AssetType } from '../enums';
+import { Repository } from 'typeorm';
+import { BaseService } from '../base/base.service';
 import { DailyEntity } from '../daily/daily.entity';
 import { QhBuyDateEntity } from './qh-buy-date.entity';
 
 @Injectable()
-export class QhBuyDateService {
-  async run(
-    tsCode: string,
-    period: number = 10,
+export class QhBuyDateService extends BaseService {
+  constructor(
+    @InjectRepository(DailyEntity)
+    private readonly dailyRepository: Repository<DailyEntity>,
+
+    @InjectRepository(QhBuyDateEntity)
+    private readonly qhBuyDateRepository: Repository<QhBuyDateEntity>,
   ) {
-    const dailyList = await getConnection()
-      .getRepository(DailyEntity)
-      .find({ where: { tsCode }, order: { tradeDate: 'ASC' } });
+    super();
+  }
+  async run(tsCode: string, period: number = 10) {
+    const dailyList = await this.dailyRepository.find({
+      where: { tsCode },
+      order: { tradeDate: 'ASC' },
+    });
 
     const buyDateList: Date[][] = [];
 
@@ -54,7 +62,7 @@ export class QhBuyDateService {
       Logger.log(`命中日期：${targetDate}，报警日期：${alertDate}`);
     });
 
-    await getConnection().getRepository(QhBuyDateEntity).insert(
+    await this.qhBuyDateRepository.insert(
       buyDateList.map(([targetDate, alertDate]) => ({
         tsCode,
         period,

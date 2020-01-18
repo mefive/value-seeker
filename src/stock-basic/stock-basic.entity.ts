@@ -38,4 +38,9 @@ export class StockBasicEntity extends BaseEntity {
     nullable: true,
   })
   delistDate?: Date;
+
+  @Column('date', {
+    nullable: true,
+  })
+  startDate?: Date;
 }

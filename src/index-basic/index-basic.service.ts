@@ -1,23 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { getConnection } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { BaseService } from '../base/base.service';
-import { batchInsert } from '../utils/query';
 import { tushare } from '../utils/tushare';
 import { IndexBasicEntity } from './index-basic.entity';
 
 @Injectable()
 export class IndexBasicService extends BaseService {
+  constructor(
+    @InjectRepository(IndexBasicEntity)
+    private readonly indexBasicRepository: Repository<IndexBasicEntity>,
+  ) {
+    super();
+  }
+
   async loadData() {
     const resp = await tushare<IndexBasicEntity[]>('index_basic', {
       market: 'SSE',
     });
 
-    await getConnection()
-      .createQueryBuilder()
-      .delete()
-      .from(IndexBasicEntity)
-      .execute();
+    await this.indexBasicRepository.delete({ market: 'SSE' });
 
-    await batchInsert(IndexBasicEntity, resp.data);
+    await this.indexBasicRepository.insert(resp.data);
   }
 }

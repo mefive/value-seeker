@@ -1,17 +1,29 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as _ from 'lodash';
 import { Moment } from 'moment';
-import { getConnection } from 'typeorm';
+import { Repository } from 'typeorm';
+import { BaseService } from '../base/base.service';
 import { dateFormatString } from '../constants';
 import { AssetType } from '../enums';
+import { StockBasicEntity } from '../stock-basic/stock-basic.entity';
 import { rsv } from '../utils/indicators';
-import { batchInsert } from '../utils/query';
 import { tushare } from '../utils/tushare';
 import { DailyEntity } from './daily.entity';
 import moment = require('moment');
 
 @Injectable()
-export class DailyService {
+export class DailyService extends BaseService {
+  constructor(
+    @InjectRepository(DailyEntity)
+    private readonly dailyRepository: Repository<DailyEntity>,
+
+    @InjectRepository(StockBasicEntity)
+    private readonly stockBasicRepository: Repository<StockBasicEntity>,
+  ) {
+    super();
+  }
+
   async loadData(
     tsCode: string | null = null,
     startDate: Moment,
@@ -23,11 +35,16 @@ export class DailyService {
 
     const today = moment();
 
-    const dailyList = await getConnection()
-      .getRepository(DailyEntity)
-      .find({ where: { tsCode }, take: 1, order: { tradeDate: 'DESC' } });
+    const dailyList = await this.dailyRepository.find({
+      where: { tsCode },
+      take: 1,
+      order: { tradeDate: 'DESC' },
+    });
 
-    if (dailyList[0] && moment(dailyList[0].tradeDate).isSame(today.clone().subtract(1, 'd'), 'd')) {
+    if (
+      dailyList[0] &&
+      moment(dailyList[0].tradeDate).isSame(today.clone().subtract(1, 'd'), 'd')
+    ) {
       Logger.log(`${tsCode} 无需更新`);
       return;
     }
@@ -71,6 +88,20 @@ export class DailyService {
 
     Logger.log(`插入 daily，${tsCode}`);
 
-    await batchInsert(DailyEntity, list);
+    const task: Array<Promise<any>> = [this.dailyRepository.insert(list)];
+
+    if (assetType === AssetType.STOCK) {
+      // 用第一个实际交易日，更新 stock basic 的 start date，因为 list date 可能不准
+      task.push(
+        this.stockBasicRepository.update(
+          { tsCode },
+          {
+            startDate: new Date(+moment(list[0].tradeDate)),
+          },
+        ),
+      );
+    }
+
+    await Promise.all(task);
   }
 }

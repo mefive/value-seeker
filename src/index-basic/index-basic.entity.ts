@@ -6,6 +6,9 @@ export class IndexBasicEntity extends BaseEntity {
   @Column()
   tsCode: string = '';
 
+  @Column({ nullable: true })
+  market?: string;
+
   @Column({
     charset: 'utf8',
   })

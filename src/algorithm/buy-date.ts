@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { getConnection } from 'typeorm';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { AppModule } from '../app.module';
 import { QhBuyDateEntity } from '../qh-buy-date/qh-buy-date.entity';
 import { QhBuyDateService } from '../qh-buy-date/qh-buy-date.service';
@@ -11,11 +12,17 @@ async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
   const qhBuyDateService = app.get(QhBuyDateService);
 
+  const qhBuyDateRepository = app.get(
+    getRepositoryToken(QhBuyDateEntity),
+  ) as Repository<QhBuyDateEntity>;
+
+  const stockBasicRepository = app.get(
+    getRepositoryToken(StockBasicEntity),
+  ) as Repository<StockBasicEntity>;
+
   const period = 10;
 
-  await getConnection()
-    .getRepository(QhBuyDateEntity)
-    .delete({ period });
+  await qhBuyDateRepository.delete({ period });
 
   try {
     await qhBuyDateService.run('000001.SH', period);
@@ -23,9 +30,10 @@ async function bootstrap() {
     const size = 50;
 
     for (let i = 0; i < 2; i++) {
-      const stockBasicList = await getConnection()
-        .getRepository(StockBasicEntity)
-        .find({ skip: i * size, take: size });
+      const stockBasicList = await stockBasicRepository.find({
+        skip: i * size,
+        take: size,
+      });
 
       await Promise.all(
         stockBasicList.map((stockBasic) =>
@@ -36,7 +44,7 @@ async function bootstrap() {
       await delay(200);
     }
   } finally {
-    app.close();
+    await app.close();
   }
 }
 

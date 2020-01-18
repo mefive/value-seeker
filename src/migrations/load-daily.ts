@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { getConnection } from 'typeorm';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { AppModule } from '../app.module';
 import { DailyService } from '../daily/daily.service';
 import { AssetType } from '../enums';
@@ -11,12 +12,19 @@ import moment = require('moment');
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
+
   const dailyService = app.get(DailyService);
 
+  const indexBasicRepository = app.get(
+    getRepositoryToken(IndexBasicEntity),
+  ) as Repository<IndexBasicEntity>;
+
+  const stockBasicRepository = app.get(
+    getRepositoryToken(StockBasicEntity),
+  ) as Repository<StockBasicEntity>;
+
   try {
-    const index = await getConnection()
-      .getRepository(IndexBasicEntity)
-      .findOne({ tsCode: '000001.SH' });
+    const index = await indexBasicRepository.findOne({ tsCode: '000001.SH' });
 
     await dailyService.loadData(
       index?.tsCode,
@@ -25,12 +33,13 @@ async function bootstrap() {
     );
 
     const size = 100;
-    const start = 6;
+    const start = 15;
 
     for (let i = start; i < start + 2; i++) {
-      const stockBasicList = await getConnection()
-        .getRepository(StockBasicEntity)
-        .find({ skip: i * size, take: size });
+      const stockBasicList = await stockBasicRepository.find({
+        skip: i * size,
+        take: size,
+      });
 
       await Promise.all(
         stockBasicList.map((stockBasic) =>
@@ -45,7 +54,7 @@ async function bootstrap() {
       await delay(200);
     }
   } finally {
-    app.close();
+    await app.close();
   }
 }
 

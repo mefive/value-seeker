@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AxiosResponse } from 'axios';
 import * as _ from 'lodash';
-import { Moment } from 'moment';
+import * as moment from 'moment';
+import { sma } from 'technicalindicators';
 import { Repository } from 'typeorm';
 import { BaseService } from '../base/base.service';
 import { dateFormatString } from '../constants';
@@ -10,7 +12,6 @@ import { StockBasicEntity } from '../stock-basic/stock-basic.entity';
 import { rsv } from '../utils/indicators';
 import { tushare } from '../utils/tushare';
 import { DailyEntity } from './daily.entity';
-import moment = require('moment');
 
 @Injectable()
 export class DailyService extends BaseService {
@@ -24,71 +25,115 @@ export class DailyService extends BaseService {
     super();
   }
 
+  private getSma(
+    dailyList: DailyEntity[],
+    index: number,
+    period: number,
+  ): number | undefined {
+    const ma = sma({
+      period,
+      values: [
+        ..._.range(1, period)
+          .map((r) => dailyList[index - r]?.close)
+          .reverse(),
+        dailyList[index].close,
+      ],
+    })[0];
+    return Number.isNaN(ma) ? undefined : ma;
+  }
+
   async loadData(
     tsCode: string | null = null,
-    startDate: Moment,
+    startDate: moment.Moment,
     assetType: AssetType,
   ) {
     if (tsCode == null) {
       return;
     }
 
-    const today = moment();
-
-    const dailyList = await this.dailyRepository.find({
+    const exist = await this.dailyRepository.findOne({
       where: { tsCode },
-      take: 1,
-      order: { tradeDate: 'DESC' },
     });
 
-    if (
-      dailyList[0] &&
-      moment(dailyList[0].tradeDate).isSame(today.clone().subtract(1, 'd'), 'd')
-    ) {
-      Logger.log(`${tsCode} 无需更新`);
+    if (exist) {
+      Logger.log(`${tsCode} 已存在`);
       return;
     }
 
-    const resp = await tushare<DailyEntity[]>(
-      assetType === AssetType.INDEX ? 'index_daily' : 'daily',
-      {
-        tsCode,
-        startDate:
-          dailyList.length > 0
-            ? today.format(dateFormatString)
-            : startDate.format(dateFormatString),
-        endDate: today.format(dateFormatString),
-      },
-    );
+    const startDateStr = startDate.format(dateFormatString);
 
-    if (resp.data.length === 0) {
+    const tasks: Array<Promise<any>> = [
+      tushare<DailyEntity[]>(
+        assetType === AssetType.INDEX ? 'index_daily' : 'daily',
+        {
+          tsCode,
+          startDate: startDateStr,
+        },
+      ),
+    ];
+
+    if (assetType === AssetType.STOCK) {
+      tasks.push(
+        tushare<Array<{ adjFactor: number }>>('adj_factor', {
+          tsCode,
+          startDate: startDateStr,
+        }),
+      );
+    }
+
+    const [dailyResponse, adjFactorResponse] = (await Promise.all(tasks)) as [
+      AxiosResponse<DailyEntity[]>,
+      AxiosResponse<Array<{ adjFactor: number }>> | undefined,
+    ];
+
+    if (dailyResponse.data.length === 0) {
       Logger.log(`${tsCode}没有数据`);
       return;
     }
 
-    const list = _.sortBy(resp.data, (d) => d.tradeDate);
+    const dailyDataList = dailyResponse.data.reverse();
+    const adjFactorDataList = adjFactorResponse?.data.reverse();
+    const lastAdjFactorData = adjFactorDataList?.slice(-1)[0];
 
-    for (let i = 0; i < list.length; i++) {
-      const daily = list[i];
+    for (let i = 0; i < dailyDataList.length; i++) {
+      const daily = dailyDataList[i];
+
+      if (assetType === AssetType.STOCK) {
+        const adjFactorData = adjFactorDataList![i];
+        // 前复权算法
+        const multiplier =
+          adjFactorData.adjFactor / lastAdjFactorData!.adjFactor;
+
+        daily.close = +(daily.close * multiplier).toFixed(3);
+        daily.low = +(daily.low * multiplier).toFixed(3);
+        daily.high = +(daily.high * multiplier).toFixed(3);
+      }
 
       daily.tradeDate = moment(daily.tradeDate).toDate();
 
-      daily.rsv = rsv(
-        _.range(9)
-          .map((r) => list[i - r])
+      daily.rsv = rsv([
+        ..._.range(1, 9)
+          .map((r) => dailyDataList[i - r])
           .reverse(),
-      );
+        daily,
+      ]);
 
-      const last = list[i - 1];
+      const last = dailyDataList[i - 1];
 
       daily.k = last && daily.rsv ? (2 / 3) * last.k + (1 / 3) * daily.rsv : 50;
       daily.d = last ? (2 / 3) * last.d + (1 / 3) * daily.k : 50;
       daily.j = 3 * daily.k - 2 * daily.d;
+      daily.ma5 = this.getSma(dailyDataList, i, 5);
+      daily.ma10 = this.getSma(dailyDataList, i, 10);
+      daily.ma20 = this.getSma(dailyDataList, i, 20);
+      daily.ma90 = this.getSma(dailyDataList, i, 90);
     }
 
     Logger.log(`插入 daily，${tsCode}`);
 
-    const task: Array<Promise<any>> = [this.dailyRepository.insert(list)];
+    const task: Array<Promise<any>> = [
+      this.dailyRepository.insert(dailyDataList),
+    ];
 
     if (assetType === AssetType.STOCK) {
       // 用第一个实际交易日，更新 stock basic 的 start date，因为 list date 可能不准
@@ -96,7 +141,7 @@ export class DailyService extends BaseService {
         this.stockBasicRepository.update(
           { tsCode },
           {
-            startDate: new Date(+moment(list[0].tradeDate)),
+            startDate: new Date(+moment(dailyDataList[0].tradeDate)),
           },
         ),
       );

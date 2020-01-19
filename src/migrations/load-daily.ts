@@ -7,7 +7,6 @@ import { DailyService } from '../daily/daily.service';
 import { AssetType } from '../enums';
 import { IndexBasicEntity } from '../index-basic/index-basic.entity';
 import { StockBasicEntity } from '../stock-basic/stock-basic.entity';
-import delay from '../utils/delay';
 import moment = require('moment');
 
 async function bootstrap() {
@@ -33,25 +32,21 @@ async function bootstrap() {
     );
 
     const size = 100;
-    const start = 15;
+    const page = 38;
 
-    for (let i = start; i < start + 2; i++) {
+    for (let i = 27; i < page; i++) {
       const stockBasicList = await stockBasicRepository.find({
         skip: i * size,
         take: size,
       });
 
-      await Promise.all(
-        stockBasicList.map((stockBasic) =>
-          dailyService.loadData(
-            stockBasic.tsCode,
-            moment(stockBasic.listDate),
-            AssetType.STOCK,
-          ),
-        ),
-      );
-
-      await delay(200);
+      for (const stockBasic of stockBasicList) {
+        await dailyService.loadData(
+          stockBasic.tsCode,
+          moment(stockBasic.listDate),
+          AssetType.STOCK,
+        );
+      }
     }
   } finally {
     await app.close();

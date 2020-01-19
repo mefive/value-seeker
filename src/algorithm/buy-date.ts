@@ -27,9 +27,10 @@ async function bootstrap() {
   try {
     await qhBuyDateService.run('000001.SH', period);
 
-    const size = 50;
+    const size = 100;
+    const page = 30;
 
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < page; i++) {
       const stockBasicList = await stockBasicRepository.find({
         skip: i * size,
         take: size,
@@ -40,8 +41,6 @@ async function bootstrap() {
           qhBuyDateService.run(stockBasic.tsCode, period),
         ),
       );
-
-      await delay(200);
     }
   } finally {
     await app.close();

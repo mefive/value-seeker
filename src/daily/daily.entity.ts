@@ -45,4 +45,16 @@ export class DailyEntity extends BaseEntity {
 
   @Column('double', { precision: 20, scale: 2, nullable: true })
   j: number = 0;
+
+  @Column('double', { precision: 20, scale: 2, nullable: true })
+  ma5?: number;
+
+  @Column('double', { precision: 20, scale: 2, nullable: true })
+  ma10?: number;
+
+  @Column('double', { precision: 20, scale: 2, nullable: true })
+  ma20?: number;
+
+  @Column('double', { precision: 20, scale: 2, nullable: true })
+  ma90?: number;
 }

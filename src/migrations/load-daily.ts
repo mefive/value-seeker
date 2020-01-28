@@ -34,7 +34,7 @@ async function bootstrap() {
     const size = 100;
     const page = 38;
 
-    for (let i = 27; i < page; i++) {
+    for (let i = 37; i < page; i++) {
       const stockBasicList = await stockBasicRepository.find({
         skip: i * size,
         take: size,

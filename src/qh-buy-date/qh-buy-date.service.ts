@@ -17,7 +17,11 @@ export class QhBuyDateService extends BaseService {
   ) {
     super();
   }
-  async run(tsCode: string, period: number = 10) {
+
+  async run(
+    tsCode: string,
+    period: number = 10,
+  ): Promise<Array<Omit<QhBuyDateEntity, 'id'>>> {
     const dailyList = await this.dailyRepository.find({
       where: { tsCode },
       order: { tradeDate: 'ASC' },
@@ -62,13 +66,11 @@ export class QhBuyDateService extends BaseService {
       Logger.log(`命中日期：${targetDate}，报警日期：${alertDate}`);
     });
 
-    await this.qhBuyDateRepository.insert(
-      buyDateList.map(([targetDate, alertDate]) => ({
-        tsCode,
-        period,
-        targetDate,
-        alertDate,
-      })),
-    );
+    return buyDateList.map(([targetDate, alertDate]) => ({
+      tsCode,
+      period,
+      targetDate,
+      alertDate,
+    }));
   }
 }

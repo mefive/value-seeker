@@ -6,7 +6,6 @@ import { AppModule } from '../app.module';
 import { QhBuyDateEntity } from '../qh-buy-date/qh-buy-date.entity';
 import { QhBuyDateService } from '../qh-buy-date/qh-buy-date.service';
 import { StockBasicEntity } from '../stock-basic/stock-basic.entity';
-import delay from '../utils/delay';
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -20,27 +19,36 @@ async function bootstrap() {
     getRepositoryToken(StockBasicEntity),
   ) as Repository<StockBasicEntity>;
 
-  const period = 10;
+  const period = 5;
 
   await qhBuyDateRepository.delete({ period });
 
   try {
     await qhBuyDateService.run('000001.SH', period);
+    let qhBuyDateEntityList: Array<Omit<QhBuyDateEntity, 'id'>> = [];
 
     const size = 100;
-    const page = 30;
+    const totalPage = (await stockBasicRepository.count()) / size;
 
-    for (let i = 0; i < page; i++) {
+    let page = 0;
+
+    while (page < totalPage) {
       const stockBasicList = await stockBasicRepository.find({
-        skip: i * size,
+        skip: page * size,
         take: size,
       });
 
-      await Promise.all(
-        stockBasicList.map((stockBasic) =>
-          qhBuyDateService.run(stockBasic.tsCode, period),
-        ),
-      );
+      for (const stockBasic of stockBasicList) {
+        qhBuyDateEntityList = qhBuyDateEntityList.concat(
+          await qhBuyDateService.run(stockBasic.tsCode, period),
+        );
+      }
+
+      page++;
+    }
+
+    if (qhBuyDateEntityList.length > 0) {
+      await qhBuyDateRepository.insert(qhBuyDateEntityList);
     }
   } finally {
     await app.close();

@@ -7,6 +7,7 @@ export class DailyEntity extends BaseEntity {
   @Column()
   tsCode: string = '';
 
+  @Index()
   @Column('date')
   tradeDate: Date = new Date();
 

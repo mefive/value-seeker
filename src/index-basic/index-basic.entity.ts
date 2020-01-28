@@ -1,8 +1,9 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, Index } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 
 @Entity('index_basic')
 export class IndexBasicEntity extends BaseEntity {
+  @Index()
   @Column()
   tsCode: string = '';
 

@@ -21,7 +21,7 @@ export function camelCaseKeys(object: any) {
       if (typeof v === 'object' && !Array.isArray(v)) {
         r[_.camelCase(k)] = camelCaseKeys(v);
       } else {
-        r[_.snakeCase(k)] = v;
+        r[_.camelCase(k)] = v;
       }
     },
     {} as any,

@@ -21,7 +21,11 @@
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "load-basic": "ts-node src/migrations/load-basic.ts",
     "load-daily": "ts-node src/migrations/load-daily.ts",
-    "buy-date": "ts-node ./src/algorithm/buy-date.ts"
+    "load-cal": "ts-node ./src/migrations/load-cal.ts",
+    "load-fina": "ts-node ./src/migrations/load-fina.ts",
+    "load-dividend": "ts-node ./src/migrations/load-dividend.ts",
+    "buy-date": "ts-node ./src/algorithm/buy-date.ts",
+    "stock-collect": "ts-node ./src/algorithm/stock-collect.ts"
   },
   "dependencies": {
     "@nestjs/common": "^6.7.2",

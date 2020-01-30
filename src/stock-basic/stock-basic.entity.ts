@@ -26,7 +26,7 @@ export class StockBasicEntity extends BaseEntity {
   })
   exchange?: string;
 
-  @Column({
+  @Column('varchar', {
     nullable: true,
   })
   listStatus?: StockListStatus;

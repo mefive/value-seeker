@@ -7,6 +7,7 @@ export class IndexBasicEntity extends BaseEntity {
   @Column()
   tsCode: string = '';
 
+  @Index()
   @Column({ nullable: true })
   market?: string;
 
@@ -28,4 +29,9 @@ export class IndexBasicEntity extends BaseEntity {
     nullable: true,
   })
   expDate?: Date;
+
+  @Column('date', {
+    nullable: true,
+  })
+  startDate?: Date;
 }

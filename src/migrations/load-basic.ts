@@ -11,8 +11,8 @@ async function bootstrap() {
 
   try {
     await Promise.all([
-      indexBasicService.loadData(),
-      stockBasicService.loadData(),
+      indexBasicService.loadData('SSE'),
+      // stockBasicService.loadData(),
     ]);
   } finally {
     await app.close();

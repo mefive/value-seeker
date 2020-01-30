@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { BaseService } from '../base/base.service';
 import { dateFormatString } from '../constants';
 import { AssetType } from '../enums';
+import { IndexBasicEntity } from '../index-basic/index-basic.entity';
 import { StockBasicEntity } from '../stock-basic/stock-basic.entity';
 import { rsv } from '../utils/indicators';
 import { tushare } from '../utils/tushare';
@@ -21,6 +22,9 @@ export class DailyService extends BaseService {
 
     @InjectRepository(StockBasicEntity)
     private readonly stockBasicRepository: Repository<StockBasicEntity>,
+
+    @InjectRepository(IndexBasicEntity)
+    private readonly indexBasicRepository: Repository<IndexBasicEntity>,
   ) {
     super();
   }
@@ -135,14 +139,23 @@ export class DailyService extends BaseService {
       this.dailyRepository.insert(dailyDataList),
     ];
 
+    const tradeStartDate = new Date(+moment(dailyDataList[0].tradeDate));
+
     if (assetType === AssetType.STOCK) {
       // 用第一个实际交易日，更新 stock basic 的 start date，因为 list date 可能不准
       task.push(
         this.stockBasicRepository.update(
           { tsCode },
           {
-            startDate: new Date(+moment(dailyDataList[0].tradeDate)),
+            startDate: tradeStartDate,
           },
+        ),
+      );
+    } else {
+      task.push(
+        this.indexBasicRepository.update(
+          { tsCode },
+          { startDate: tradeStartDate },
         ),
       );
     }

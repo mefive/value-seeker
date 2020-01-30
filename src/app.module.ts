@@ -10,6 +10,7 @@ import { TradeCalModule } from './trade-cal/trade-cal.module';
 import { FinaIndicatorModule } from './fina-indicator/fina-indicator.module';
 import { QhStockCollectModule } from './qh-stock-collect/qh-stock-collect.module';
 import { DividendModule } from './dividend/dividend.module';
+import { DailyBasicModule } from './daily-basic/daily-basic.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { DividendModule } from './dividend/dividend.module';
     FinaIndicatorModule,
     QhStockCollectModule,
     DividendModule,
+    DailyBasicModule,
   ],
   controllers: [AppController],
   providers: [AppService],

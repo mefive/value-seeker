@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
-import { DailyBasicService } from './daily-basic.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { StockBasicEntity } from '../stock-basic/stock-basic.entity';
 import { DailyBasicController } from './daily-basic.controller';
+import { DailyBasicEntity } from './daily-basic.entity';
+import { DailyBasicService } from './daily-basic.service';
 
 @Module({
+  imports: [TypeOrmModule.forFeature([StockBasicEntity, DailyBasicEntity])],
   providers: [DailyBasicService],
-  controllers: [DailyBasicController]
+  controllers: [DailyBasicController],
 })
 export class DailyBasicModule {}

@@ -7,9 +7,11 @@ import { sma } from 'technicalindicators';
 import { Repository } from 'typeorm';
 import { BaseService } from '../base/base.service';
 import { dateFormatString } from '../constants';
+import { DailyBasicEntity } from '../daily-basic/daily-basic.entity';
 import { AssetType } from '../enums';
 import { IndexBasicEntity } from '../index-basic/index-basic.entity';
 import { StockBasicEntity } from '../stock-basic/stock-basic.entity';
+import { PagingRequest, PagingResponse } from '../types';
 import { rsv } from '../utils/indicators';
 import { tushare } from '../utils/tushare';
 import { DailyEntity } from './daily.entity';
@@ -27,6 +29,27 @@ export class DailyService extends BaseService {
     private readonly indexBasicRepository: Repository<IndexBasicEntity>,
   ) {
     super();
+  }
+
+  async findAll(
+    params: Partial<PagingRequest> & { tsCode: string },
+  ): Promise<PagingResponse<DailyBasicEntity>> {
+    const { tsCode, start = 0, limit = 20 } = params;
+    const data = await this.dailyRepository.findAndCount({
+      where: {
+        tsCode,
+      },
+      skip: start,
+      take: limit,
+      order: {
+        tradeDate: 'DESC',
+      },
+    });
+
+    return {
+      result: data[0],
+      total: data[1],
+    };
   }
 
   private getSma(

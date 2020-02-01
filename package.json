@@ -23,6 +23,7 @@
     "load-cal": "ts-node ./src/migrations/load-cal.ts",
     "load-fina": "ts-node ./src/migrations/load-fina.ts",
     "load-dividend": "ts-node ./src/migrations/load-dividend.ts",
+    "load-daily-basic": "ts-node ./src/migrations/load-daily-basic.ts",
     "buy-date": "ts-node ./src/algorithm/buy-date.ts",
     "stock-collect": "ts-node ./src/algorithm/stock-collect.ts",
     "start": "ts-node ./src/main.ts",

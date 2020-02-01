@@ -1,16 +1,16 @@
 import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
 import { PagingRequest } from '../types';
-import { DailyBasicService } from './daily-basic.service';
+import { DailyService } from './daily.service';
 
-@Controller('daily-basic')
-export class DailyBasicController {
-  constructor(private readonly dailyBasicService: DailyBasicService) {}
+@Controller('daily')
+export class DailyController {
+  constructor(private readonly dailyService: DailyService) {}
 
   @Get()
   async findAll(@Query() query: Partial<PagingRequest> & { tsCode: string }) {
     if (!query.tsCode) {
       throw new BadRequestException();
     }
-    return await this.dailyBasicService.findAll(query);
+    return await this.dailyService.findAll(query);
   }
 }

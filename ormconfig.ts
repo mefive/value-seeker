@@ -8,7 +8,7 @@ module.exports = {
   password: 'password',
   database: 'db',
   synchronize: false,
-  charset: 'utf8',
+  charset: 'utf8mb4',
   namingStrategy: new SnakeNamingStrategy(),
   logging: true,
   entities: ['src/**/*.entity.ts'],

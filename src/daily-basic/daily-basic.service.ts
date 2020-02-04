@@ -57,9 +57,18 @@ export class DailyBasicService extends BaseService {
         const stock = allStocks[page * size + i];
 
         if (stock) {
-          skip =
-            !(await this.loadData(stock.tsCode, AssetType.STOCK, stock.name)) &&
-            skip;
+          if (
+            (await this.dailyBasicRepository.findOne({
+              where: { tsCode: stock.tsCode },
+            })) != null
+          ) {
+            Logger.log(`${stock.name} ${stock.tsCode} 每日指标已存在`);
+            continue;
+          }
+
+          skip = false;
+
+          await this.loadData(stock.tsCode, AssetType.STOCK, stock.name);
         }
       }
 
@@ -77,17 +86,14 @@ export class DailyBasicService extends BaseService {
     tsCode: string,
     assetType: AssetType,
     name?: string,
-  ): Promise<boolean> {
+  ): Promise<DailyBasicEntity[] | null> {
     if (tsCode == null) {
-      return false;
+      return null;
     }
 
     const codeName = `${name ? `${name} ` : ''}${tsCode}`;
 
-    if ((await this.dailyBasicRepository.count({ where: { tsCode } })) > 0) {
-      Logger.log(`${codeName} 每日指标已存在`);
-      return false;
-    }
+    await this.dailyBasicRepository.delete({ tsCode });
 
     const response = await tushare<DailyBasicEntity[]>(
       assetType === AssetType.INDEX ? 'index_dailybasic' : 'daily_basic',
@@ -98,17 +104,18 @@ export class DailyBasicService extends BaseService {
 
     if (response.data.length === 0) {
       Logger.log(`${codeName} daily basic 无数据`);
-      return false;
+      return null;
     }
 
-    await this.dailyBasicRepository.insert(
+    const dailyBasicList =
       assetType === AssetType.INDEX
         ? response.data.map((d) =>
             _.omit(d, ['totalShare', 'totalMv', 'floatShare']),
           )
-        : response.data,
-    );
+        : response.data;
 
-    return true;
+    await this.dailyBasicRepository.insert(dailyBasicList);
+
+    return dailyBasicList;
   }
 }

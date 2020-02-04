@@ -12,7 +12,7 @@ async function bootstrap() {
   try {
     await Promise.all([
       indexBasicService.loadData('SSE'),
-      // stockBasicService.loadData(),
+      stockBasicService.loadData(),
     ]);
   } finally {
     await app.close();

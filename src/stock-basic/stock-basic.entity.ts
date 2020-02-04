@@ -10,13 +10,10 @@ export class StockBasicEntity extends BaseEntity {
   @Column()
   symbol: string = '';
 
-  @Column({
-    charset: 'utf8',
-  })
+  @Column()
   name: string = '';
 
   @Column({
-    charset: 'utf8',
     nullable: true,
   })
   industry: string = '';
@@ -43,4 +40,9 @@ export class StockBasicEntity extends BaseEntity {
     nullable: true,
   })
   startDate?: Date;
+
+  @Column('date', {
+    nullable: true,
+  })
+  endDate?: Date;
 }

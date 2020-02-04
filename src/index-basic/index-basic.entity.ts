@@ -11,13 +11,10 @@ export class IndexBasicEntity extends BaseEntity {
   @Column({ nullable: true })
   market?: string;
 
-  @Column({
-    charset: 'utf8',
-  })
+  @Column()
   name: string = '';
 
   @Column({
-    charset: 'utf8',
     nullable: true,
   })
   fullname?: string;
@@ -34,4 +31,9 @@ export class IndexBasicEntity extends BaseEntity {
     nullable: true,
   })
   startDate?: Date;
+
+  @Column('date', {
+    nullable: true,
+  })
+  endDate?: Date;
 }

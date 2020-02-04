@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository, FindOneOptions } from 'typeorm';
+import { FindConditions } from 'typeorm/find-options/FindConditions';
 import { BaseService } from '../base/base.service';
 import { PagingRequest } from '../types';
 import { tushare } from '../utils/tushare';
@@ -15,13 +16,26 @@ export class IndexBasicService extends BaseService {
     super();
   }
 
-  async findAll(params: Partial<PagingRequest> & { market?: string }) {
+  async findAll(
+    params: Partial<PagingRequest> & { market?: string; tsCode?: string },
+  ) {
     const { market = 'SSE', start = 0, limit = 20 } = params;
 
+    const where: Array<FindConditions<IndexBasicEntity>> = [{ market }];
+
+    if (params.search) {
+      const like = Like(`%${params.search}%`);
+
+      where[0].tsCode = like;
+      where.push({ name: like });
+    }
+
+    if (params.tsCode) {
+      where[0].tsCode = params.tsCode;
+    }
+
     const data = await this.indexBasicRepository.findAndCount({
-      where: {
-        market,
-      },
+      where,
       take: limit,
       skip: start,
     });

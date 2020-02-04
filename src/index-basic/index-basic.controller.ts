@@ -16,11 +16,14 @@ export class IndexBasicController {
   constructor(private readonly indexBasicService: IndexBasicService) {}
 
   @Get()
-  async findAll(@Query() query: Partial<PagingRequest> & { market?: string }) {
+  async findAll(
+    @Query()
+    query: Partial<PagingRequest> & { market?: string; tsCode?: string },
+  ) {
     return await this.indexBasicService.findAll(query);
   }
 
-  @Post('/load')
+  @Post('load')
   async loadData(@Body() body: { market?: string }) {
     const { market = 'SSE' } = body;
     await this.indexBasicService.loadData(market);

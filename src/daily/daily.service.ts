@@ -6,12 +6,12 @@ import * as moment from 'moment';
 import { sma } from 'technicalindicators';
 import { Repository } from 'typeorm';
 import { BaseService } from '../base/base.service';
-import { dateFormatString } from '../constants';
 import { DailyBasicEntity } from '../daily-basic/daily-basic.entity';
 import { AssetType } from '../enums';
 import { IndexBasicEntity } from '../index-basic/index-basic.entity';
 import { StockBasicEntity } from '../stock-basic/stock-basic.entity';
 import { PagingRequest, PagingResponse } from '../types';
+import delay from '../utils/delay';
 import { rsv } from '../utils/indicators';
 import { tushare } from '../utils/tushare';
 import { DailyEntity } from './daily.entity';
@@ -52,6 +52,44 @@ export class DailyService extends BaseService {
     };
   }
 
+  async loadAllStocks() {
+    const allStocks = await this.stockBasicRepository.find({
+      order: { tsCode: 'DESC' },
+    });
+
+    const size = 200;
+
+    for (let page = 0; page < Math.ceil(allStocks.length / size); page++) {
+      let skip = true;
+
+      for (let i = 0; i < size; i++) {
+        const stock = allStocks[page * size + i];
+
+        if (stock) {
+          if (
+            (await this.dailyRepository.findOne({ tsCode: stock.tsCode })) !=
+            null
+          ) {
+            Logger.log(`${stock.name} ${stock.tsCode} 日交易数据已存在`);
+            continue;
+          }
+
+          skip = false;
+
+          await this.loadData(stock.tsCode, AssetType.STOCK, stock.name);
+        }
+      }
+
+      Logger.log(`第 ${page} 页日交易数据保存成功`);
+
+      if (!skip) {
+        await delay(60 * 1000);
+      }
+    }
+
+    Logger.log(`全部日交易数据保存成功`);
+  }
+
   private getSma(
     dailyList: DailyEntity[],
     index: number,
@@ -71,30 +109,22 @@ export class DailyService extends BaseService {
 
   async loadData(
     tsCode: string | null = null,
-    startDate: moment.Moment,
     assetType: AssetType,
-  ) {
+    name?: string,
+  ): Promise<DailyEntity[] | null> {
     if (tsCode == null) {
-      return;
+      return null;
     }
 
-    const exist = await this.dailyRepository.findOne({
-      where: { tsCode },
-    });
+    await this.dailyRepository.delete({ tsCode });
 
-    if (exist) {
-      Logger.log(`${tsCode} 已存在`);
-      return;
-    }
-
-    const startDateStr = startDate.format(dateFormatString);
+    const codeName = `${name ? `${name} ` : ''}${tsCode}`;
 
     const tasks: Array<Promise<any>> = [
       tushare<DailyEntity[]>(
         assetType === AssetType.INDEX ? 'index_daily' : 'daily',
         {
           tsCode,
-          startDate: startDateStr,
         },
       ),
     ];
@@ -103,7 +133,6 @@ export class DailyService extends BaseService {
       tasks.push(
         tushare<Array<{ adjFactor: number }>>('adj_factor', {
           tsCode,
-          startDate: startDateStr,
         }),
       );
     }
@@ -114,16 +143,16 @@ export class DailyService extends BaseService {
     ];
 
     if (dailyResponse.data.length === 0) {
-      Logger.log(`${tsCode}没有数据`);
-      return;
+      Logger.log(`${codeName} 没有数据`);
+      return null;
     }
 
-    const dailyDataList = dailyResponse.data.reverse();
+    const dailyList = dailyResponse.data.reverse();
     const adjFactorDataList = adjFactorResponse?.data.reverse();
     const lastAdjFactorData = adjFactorDataList?.slice(-1)[0];
 
-    for (let i = 0; i < dailyDataList.length; i++) {
-      const daily = dailyDataList[i];
+    for (let i = 0; i < dailyList.length; i++) {
+      const daily = dailyList[i];
 
       if (assetType === AssetType.STOCK) {
         const adjFactorData = adjFactorDataList![i];
@@ -140,49 +169,44 @@ export class DailyService extends BaseService {
 
       daily.rsv = rsv([
         ..._.range(1, 9)
-          .map((r) => dailyDataList[i - r])
+          .map((r) => dailyList[i - r])
           .reverse(),
         daily,
       ]);
 
-      const last = dailyDataList[i - 1];
+      const last = dailyList[i - 1];
 
       daily.k = last && daily.rsv ? (2 / 3) * last.k + (1 / 3) * daily.rsv : 50;
       daily.d = last ? (2 / 3) * last.d + (1 / 3) * daily.k : 50;
       daily.j = 3 * daily.k - 2 * daily.d;
-      daily.ma5 = this.getSma(dailyDataList, i, 5);
-      daily.ma10 = this.getSma(dailyDataList, i, 10);
-      daily.ma20 = this.getSma(dailyDataList, i, 20);
-      daily.ma90 = this.getSma(dailyDataList, i, 90);
+      daily.ma5 = this.getSma(dailyList, i, 5);
+      daily.ma10 = this.getSma(dailyList, i, 10);
+      daily.ma20 = this.getSma(dailyList, i, 20);
+      daily.ma90 = this.getSma(dailyList, i, 90);
     }
 
     Logger.log(`插入 daily，${tsCode}`);
 
-    const task: Array<Promise<any>> = [
-      this.dailyRepository.insert(dailyDataList),
-    ];
+    const task: Array<Promise<any>> = [this.dailyRepository.insert(dailyList)];
 
-    const tradeStartDate = new Date(+moment(dailyDataList[0].tradeDate));
+    const startDate = new Date(+moment(dailyList[0].tradeDate));
+    const endDate = new Date(
+      +moment(dailyList[dailyList.length - 1].tradeDate),
+    );
 
     if (assetType === AssetType.STOCK) {
       // 用第一个实际交易日，更新 stock basic 的 start date，因为 list date 可能不准
       task.push(
-        this.stockBasicRepository.update(
-          { tsCode },
-          {
-            startDate: tradeStartDate,
-          },
-        ),
+        this.stockBasicRepository.update({ tsCode }, { startDate, endDate }),
       );
     } else {
       task.push(
-        this.indexBasicRepository.update(
-          { tsCode },
-          { startDate: tradeStartDate },
-        ),
+        this.indexBasicRepository.update({ tsCode }, { startDate, endDate }),
       );
     }
 
     await Promise.all(task);
+
+    return dailyList;
   }
 }

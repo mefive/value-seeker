@@ -13,36 +13,24 @@ export class StockBasicEntity extends BaseEntity {
   @Column()
   name: string = '';
 
-  @Column({
-    nullable: true,
-  })
-  industry: string = '';
+  @Column({ nullable: true })
+  industry?: string;
 
-  @Column({
-    nullable: true,
-  })
+  @Column({ nullable: true })
+  area?: string;
+
+  @Column({ nullable: true })
+  market?: string;
+
+  @Column({ nullable: true })
   exchange?: string;
-
-  @Column('varchar', {
-    nullable: true,
-  })
-  listStatus?: StockListStatus;
 
   @Column('date')
   listDate: Date = new Date();
 
-  @Column('date', {
-    nullable: true,
-  })
-  delistDate?: Date;
-
-  @Column('date', {
-    nullable: true,
-  })
+  @Column('date', { nullable: true })
   startDate?: Date;
 
-  @Column('date', {
-    nullable: true,
-  })
+  @Column('date', { nullable: true })
   endDate?: Date;
 }

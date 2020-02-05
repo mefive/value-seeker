@@ -10,7 +10,6 @@ import { DailyBasicEntity } from '../daily-basic/daily-basic.entity';
 import { AssetType } from '../enums';
 import { IndexBasicEntity } from '../index-basic/index-basic.entity';
 import { StockBasicEntity } from '../stock-basic/stock-basic.entity';
-import { PagingRequest, PagingResponse } from '../types';
 import delay from '../utils/delay';
 import { rsv } from '../utils/indicators';
 import { tushare } from '../utils/tushare';
@@ -31,25 +30,16 @@ export class DailyService extends BaseService {
     super();
   }
 
-  async findAll(
-    params: Partial<PagingRequest> & { tsCode: string },
-  ): Promise<PagingResponse<DailyBasicEntity>> {
-    const { tsCode, start = 0, limit = 20 } = params;
-    const data = await this.dailyRepository.findAndCount({
+  async findAll(params: { tsCode: string }): Promise<DailyBasicEntity[]> {
+    const { tsCode } = params;
+    return await this.dailyRepository.find({
       where: {
         tsCode,
       },
-      skip: start,
-      take: limit,
       order: {
         tradeDate: 'DESC',
       },
     });
-
-    return {
-      result: data[0],
-      total: data[1],
-    };
   }
 
   async loadAllStocks() {

@@ -80,5 +80,7 @@ export class DividendService extends BaseService {
 
       await delay(60 * 1000);
     }
+
+    Logger.log('分红送股数据下载完毕');
   }
 }

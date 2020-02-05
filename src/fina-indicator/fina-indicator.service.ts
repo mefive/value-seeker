@@ -52,5 +52,7 @@ export class FinaIndicatorService extends BaseService {
 
       await delay(60 * 1000);
     }
+
+    Logger.log('财务指标数据下载完毕');
   }
 }

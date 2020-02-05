@@ -15,7 +15,7 @@ export class DailyController {
   constructor(private readonly dailyService: DailyService) {}
 
   @Get()
-  async findAll(@Query() query: Partial<PagingRequest> & { tsCode: string }) {
+  async findAll(@Query() query: { tsCode: string }) {
     if (!query.tsCode) {
       throw new BadRequestException();
     }

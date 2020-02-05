@@ -22,25 +22,16 @@ export class DailyBasicService extends BaseService {
     super();
   }
 
-  async findAll(
-    params: Partial<PagingRequest> & { tsCode: string },
-  ): Promise<PagingResponse<DailyBasicEntity>> {
-    const { tsCode, start = 0, limit = 20 } = params;
-    const data = await this.dailyBasicRepository.findAndCount({
+  async findAll(params: { tsCode: string }): Promise<DailyBasicEntity[]> {
+    const { tsCode } = params;
+    return await this.dailyBasicRepository.find({
       where: {
         tsCode,
       },
-      skip: start,
-      take: limit,
       order: {
         tradeDate: 'DESC',
       },
     });
-
-    return {
-      result: data[0],
-      total: data[1],
-    };
   }
 
   async loadAllStocks() {
@@ -103,7 +94,7 @@ export class DailyBasicService extends BaseService {
     );
 
     if (response.data.length === 0) {
-      Logger.log(`${codeName} daily basic 无数据`);
+      Logger.log(`${codeName} 每日指标无数据`);
       return null;
     }
 

@@ -14,26 +14,21 @@ export class IndexBasicEntity extends BaseEntity {
   @Column()
   name: string = '';
 
-  @Column({
-    nullable: true,
-  })
-  fullname?: string;
+  @Column({ nullable: true })
+  publisher?: string;
+
+  @Column({ nullable: true })
+  category?: string;
 
   @Column('date', { nullable: true })
   listDate?: Date;
 
-  @Column('date', {
-    nullable: true,
-  })
+  @Column('date', { nullable: true })
   expDate?: Date;
 
-  @Column('date', {
-    nullable: true,
-  })
+  @Column('date', { nullable: true })
   startDate?: Date;
 
-  @Column('date', {
-    nullable: true,
-  })
+  @Column('date', { nullable: true })
   endDate?: Date;
 }

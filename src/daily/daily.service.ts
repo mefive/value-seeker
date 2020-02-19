@@ -44,8 +44,10 @@ export class DailyService extends BaseService {
 
   async loadAllStocks() {
     const allStocks = await this.stockBasicRepository.find({
-      order: { tsCode: 'DESC' },
+      order: { listDate: 'ASC' },
     });
+
+    // await this.dailyRepository.clear();
 
     const size = 200;
 
@@ -66,7 +68,7 @@ export class DailyService extends BaseService {
 
           skip = false;
 
-          await this.loadData(stock.tsCode, AssetType.STOCK, stock.name);
+          await this.loadData(stock.tsCode, AssetType.STOCK, false, stock.name);
         }
       }
 
@@ -100,13 +102,16 @@ export class DailyService extends BaseService {
   async loadData(
     tsCode: string | null = null,
     assetType: AssetType,
+    deleteFirst: boolean,
     name?: string,
   ): Promise<DailyEntity[] | null> {
     if (tsCode == null) {
       return null;
     }
 
-    await this.dailyRepository.delete({ tsCode });
+    if (deleteFirst) {
+      await this.dailyRepository.delete({ tsCode });
+    }
 
     const codeName = `${name ? `${name} ` : ''}${tsCode}`;
 
@@ -137,19 +142,29 @@ export class DailyService extends BaseService {
       return null;
     }
 
-    const dailyList = dailyResponse.data.reverse();
-    const adjFactorDataList = adjFactorResponse?.data.reverse();
+    const minLength = Math.min(
+      dailyResponse.data.length,
+      adjFactorResponse
+        ? adjFactorResponse.data.length
+        : dailyResponse.data.length,
+    );
+
+    const dailyList = dailyResponse.data.reverse().slice(-minLength);
+    const adjFactorDataList = adjFactorResponse?.data
+      .reverse()
+      .slice(-minLength);
     const lastAdjFactorData = adjFactorDataList?.slice(-1)[0];
 
     for (let i = 0; i < dailyList.length; i++) {
       const daily = dailyList[i];
 
-      if (assetType === AssetType.STOCK) {
+      if (assetType === AssetType.STOCK && lastAdjFactorData != null) {
         const adjFactorData = adjFactorDataList![i];
         // 前复权算法
         const multiplier =
           adjFactorData.adjFactor / lastAdjFactorData!.adjFactor;
 
+        daily.open = +(daily.open * multiplier).toFixed(3);
         daily.close = +(daily.close * multiplier).toFixed(3);
         daily.low = +(daily.low * multiplier).toFixed(3);
         daily.high = +(daily.high * multiplier).toFixed(3);

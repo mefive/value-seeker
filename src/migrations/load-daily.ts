@@ -8,8 +8,8 @@ async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
   const dailyService = app.get(DailyService);
   try {
-    await dailyService.loadData('000001.SH', AssetType.INDEX);
     await dailyService.loadAllStocks();
+    await dailyService.loadData('000001.SH', AssetType.INDEX, true);
   } finally {
     await app.close();
   }

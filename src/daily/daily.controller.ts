@@ -30,7 +30,7 @@ export class DailyController {
       throw new BadRequestException();
     }
 
-    await this.dailyService.loadData(tsCode, assetType);
+    await this.dailyService.loadData(tsCode, assetType, true);
 
     return `更新日交易数据 ${tsCode} 成功`;
   }

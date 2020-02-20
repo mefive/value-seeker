@@ -2,7 +2,8 @@ import { SnakeNamingStrategy } from './src/utils/namingStrategies';
 
 module.exports = {
   type: 'mysql',
-  host: 'localhost',
+  // host: 'localhost',
+  host: '111.229.196.34',
   port: 3306,
   username: 'mefive',
   password: 'password',

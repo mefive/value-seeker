@@ -19,12 +19,16 @@ async function bootstrap() {
     getRepositoryToken(StockBasicEntity),
   ) as Repository<StockBasicEntity>;
 
-  const period = 5;
+  const period = 10;
 
   await qhBuyDateRepository.delete({ period });
 
   try {
-    await qhBuyDateService.run('000001.SH', period);
+    const indexBuyDate = await qhBuyDateService.run('000001.SH', period);
+    await qhBuyDateRepository.insert(indexBuyDate);
+
+    return;
+
     let qhBuyDateEntityList: Array<Omit<QhBuyDateEntity, 'id'>> = [];
 
     const size = 100;

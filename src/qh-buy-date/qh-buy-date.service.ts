@@ -63,7 +63,7 @@ export class QhBuyDateService extends BaseService {
     }
 
     buyDateList.forEach(([targetDate, alertDate]) => {
-      Logger.log(`命中日期：${targetDate}，报警日期：${alertDate}`);
+      Logger.log(`${tsCode} 命中日期：${targetDate}，报警日期：${alertDate}`);
     });
 
     return buyDateList.map(([targetDate, alertDate]) => ({

@@ -43,7 +43,6 @@ export class TradeCalService extends BaseService {
       .filter((t) => t.isOpen)
       .map((t) => {
         const calDate = moment(t.calDate);
-        Logger.log(calDate.format('YYYY-MM-DD'));
 
         while (counter < allStocks.length) {
           const stock = allStocks[counter];

@@ -39,7 +39,7 @@ program
       }
 
       case 'daily-basic': {
-        await dailyBasic();
+        await dailyBasic(cmdObj.date);
         break;
       }
 

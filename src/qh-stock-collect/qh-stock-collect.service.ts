@@ -74,6 +74,7 @@ export class QhStockCollectService extends BaseService {
       return [];
     }
 
+    // 找到上一个交易日
     const tradeCal = await this.tradeCalRepository.findOne({
       where: {
         calDate: LessThan(moment(date).format('YYYY-MM-DD')),

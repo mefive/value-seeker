@@ -45,8 +45,8 @@ export class StockBasicService extends BaseService {
   }
 
   async loadData() {
+    await this.stockBasicRepository.clear();
     const resp = await tushare<StockBasicEntity[]>('stock_basic');
-    await this.stockBasicRepository.delete({ tsCode: Not(IsNull()) });
     await this.stockBasicRepository.insert(resp.data);
   }
 }

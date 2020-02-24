@@ -23,7 +23,7 @@ export class TradeCalService extends BaseService {
       Array<TradeCalEntity & { isOpen: boolean }>
     >('trade_cal');
 
-    await this.tradeCalRepository.delete({ id: Not(IsNull()) });
+    await this.tradeCalRepository.clear();
 
     const allStocks = await this.stockBasicRepository.find({
       where: {

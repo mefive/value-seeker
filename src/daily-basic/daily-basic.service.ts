@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as _ from 'lodash';
+import * as moment from 'moment';
 import { Repository } from 'typeorm';
 import { BaseService } from '../base/base.service';
 import { AssetType } from '../enums';
 import { StockBasicEntity } from '../stock-basic/stock-basic.entity';
-import { PagingRequest, PagingResponse } from '../types';
 import delay from '../utils/delay';
 import { tushare } from '../utils/tushare';
 import { DailyBasicEntity } from './daily-basic.entity';
@@ -34,10 +34,22 @@ export class DailyBasicService extends BaseService {
     });
   }
 
-  async loadAllStocks() {
+  async loadAllStocks(date: string) {
     const allStocks = await this.stockBasicRepository.find({
       order: { tsCode: 'DESC' },
     });
+
+    if (date) {
+      const exist = await this.dailyBasicRepository.findOne({
+        tradeDate: moment(date).toDate(),
+      });
+
+      if (exist == null) {
+        await this.dailyBasicRepository.clear();
+      }
+    } else {
+      await this.dailyBasicRepository.clear();
+    }
 
     const size = 200;
 

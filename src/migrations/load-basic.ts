@@ -4,7 +4,7 @@ import { AppModule } from '../app.module';
 import { IndexBasicService } from '../index-basic/index-basic.service';
 import { StockBasicService } from '../stock-basic/stock-basic.service';
 
-async function bootstrap() {
+export default async () => {
   const app = await NestFactory.createApplicationContext(AppModule);
   const indexBasicService = app.get(IndexBasicService);
   const stockBasicService = app.get(StockBasicService);
@@ -14,11 +14,8 @@ async function bootstrap() {
       indexBasicService.loadData('SSE'),
       stockBasicService.loadData(),
     ]);
+    Logger.log('下载 daily basic 成功');
   } finally {
     await app.close();
   }
-}
-
-bootstrap().then(() => {
-  Logger.log('Loading basic all done');
-});
+};

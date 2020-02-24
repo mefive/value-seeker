@@ -20,7 +20,7 @@ export class FinaIndicatorService extends BaseService {
   }
 
   async loadData() {
-    await this.finaIndicatorRepository.delete({ id: Not(IsNull()) });
+    await this.finaIndicatorRepository.clear();
 
     const allStocks = await this.stockBasicRepository.find();
 

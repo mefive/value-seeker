@@ -42,12 +42,22 @@ export class DailyService extends BaseService {
     });
   }
 
-  async loadAllStocks() {
+  async loadAllStocks(date: string) {
     const allStocks = await this.stockBasicRepository.find({
       order: { listDate: 'ASC' },
     });
 
-    // await this.dailyRepository.clear();
+    if (date) {
+      const exist = await this.dailyRepository.findOne({
+        tradeDate: moment(date).toDate(),
+      });
+
+      if (exist == null) {
+        await this.dailyRepository.clear();
+      }
+    } else {
+      await this.dailyRepository.clear();
+    }
 
     const size = 200;
 
